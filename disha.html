@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disha — Find your direction</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2312141C' stroke='%23E8A33D' stroke-width='3'/%3E%3Cpath d='M32 12 L40 32 L32 52 L24 32 Z' fill='%23E8A33D'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%2312141C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12141C;
+    --panel:#1B1E29;
+    --panel-light:#242837;
+    --paper:#F6F3EC;
+    --amber:#E8A33D;
+    --amber-dim:#7A5A28;
+    --teal:#3FA796;
+    --coral:#E8604C;
+    --text:#EDEBE4;
+    --text-dim:#A9A6A0;
+    --border:#2E323F;
+    --radius-card: 10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.serif{ font-family:'Zilla Slab', serif; font-weight:600; letter-spacing:-0.01em; }
+  a{color:inherit;}
+  button{font-family:inherit; cursor:pointer;}
+  ::selection{background:var(--amber); color:var(--ink);}
+
+  /* ---------- ONBOARDING ---------- */
+  #onboarding{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 20px;
+    background:
+      radial-gradient(ellipse 800px 500px at 20% -10%, rgba(232,163,61,0.12), transparent 60%),
+      radial-gradient(ellipse 600px 500px at 100% 100%, rgba(63,167,150,0.10), transparent 60%),
+      var(--ink);
+  }
+  .onboard-card{
+    width:100%;
+    max-width:560px;
+  }
+  .onboard-mark{
+    font-family:'Zilla Slab', serif;
+    font-size:15px;
+    color:var(--amber);
+    letter-spacing:0.02em;
+    margin-bottom:28px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .onboard-mark .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);}
+  .logo-mark{ width:20px; height:20px; flex-shrink:0; }
+  .logo-mark.small{ width:22px; height:22px; }
+  .progress-track{
+    display:flex; gap:6px; margin-bottom:36px;
+  }
+  .progress-seg{
+    height:3px; flex:1; background:var(--border); border-radius:2px; overflow:hidden;
+  }
+  .progress-seg > i{ display:block; height:100%; width:0%; background:var(--amber); transition:width .5s ease; }
+  .step{ display:none; }
+  .step.active{ display:block; animation:rise .4s ease; }
+  @keyframes rise{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .step h2{ font-size:30px; margin-bottom:8px; color:var(--text); }
+  .step p.sub{ color:var(--text-dim); margin-bottom:28px; font-size:15px; }
+  .field{ margin-bottom:18px; }
+  .field label{ display:block; font-size:12.5px; color:var(--text-dim); margin-bottom:7px; }
+  .field input[type=text], .field input[type=email]{
+    width:100%; padding:13px 14px; background:var(--panel); border:1px solid var(--border);
+    border-radius:8px; color:var(--text); font-size:15px; font-family:inherit;
+  }
+  .field input:focus{ outline:none; border-color:var(--amber); }
+  .choice-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .choice-grid.single-col{ grid-template-columns:1fr; }
+  .choice{
+    padding:14px 16px; background:var(--panel); border:1px solid var(--border); border-radius:8px;
+    font-size:14.5px; color:var(--text-dim); transition:border-color .15s, color .15s, background .15s;
+  }
+  .choice:hover{ border-color:var(--amber-dim); color:var(--text); }
+  .choice.selected{ border-color:var(--amber); color:var(--text); background:var(--panel-light); }
+  .choice .tick{ float:right; opacity:0; color:var(--amber); }
+  .choice.selected .tick{ opacity:1; }
+  .step-nav{ display:flex; justify-content:space-between; align-items:center; margin-top:28px; }
+  .btn{
+    padding:12px 22px; border-radius:8px; border:none; font-size:14.5px; font-weight:600;
+    background:var(--amber); color:var(--ink); transition:transform .12s, opacity .12s;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; }
+  .btn.ghost{ background:transparent; color:var(--text-dim); padding:12px 8px; }
+  .btn.ghost:hover{ color:var(--text); }
+  .btn.teal{ background:var(--teal); }
+
+  /* ---------- APP SHELL ---------- */
+  #app{ display:none; min-height:100vh; }
+  #app.active{ display:flex; }
+  .sidebar{
+    width:236px; flex-shrink:0; background:var(--panel); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; padding:24px 0;
+    position:sticky; top:0; height:100vh;
+  }
+  .brand{ padding:0 22px 24px; font-family:'Zilla Slab',serif; font-size:20px; display:flex; align-items:center; gap:8px;}
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);}
+  .nav-path{ position:relative; padding:6px 0; flex:1; }
+  .nav-path::before{
+    content:''; position:absolute; left:33px; top:22px; bottom:22px; width:1px; background:var(--border);
+  }
+  .nav-item{
+    position:relative; display:flex; align-items:center; gap:14px; padding:13px 22px;
+    color:var(--text-dim); font-size:14px; transition:color .15s;
+  }
+  .nav-item .node{
+    width:9px; height:9px; border-radius:50%; background:var(--border); border:2px solid var(--panel);
+    box-shadow:0 0 0 1px var(--border); flex-shrink:0; z-index:1; transition:background .15s;
+  }
+  .nav-item:hover{ color:var(--text); }
+  .nav-item.active{ color:var(--text); }
+  .nav-item.active .node{ background:var(--amber); box-shadow:0 0 0 1px var(--amber); }
+  .sidebar-foot{ padding:16px 22px 4px; border-top:1px solid var(--border); margin-top:8px; }
+  .user-chip{ display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-dim); }
+  .user-chip .avatar{
+    width:30px; height:30px; border-radius:50%; background:var(--amber); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;
+  }
+  .user-chip b{ color:var(--text); font-weight:600; display:block; font-size:13.5px; }
+
+  main{ flex:1; padding:40px 48px; max-width:1040px; }
+  .panel{ display:none; }
+  .panel.active{ display:block; animation:rise .35s ease; }
+  .panel-head{ margin-bottom:30px; }
+  .panel-head h1{ font-size:32px; margin-bottom:6px; }
+  .panel-head p{ color:var(--text-dim); font-size:15px; max-width:560px; }
+
+  .card{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-card); padding:22px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+
+  /* Roadmap */
+  .roadmap-list{ position:relative; padding-left:28px; }
+  .roadmap-list::before{ content:''; position:absolute; left:6px; top:6px; bottom:6px; width:1px; background:var(--border); }
+  .rm-item{ position:relative; padding-bottom:30px; }
+  .rm-item:last-child{ padding-bottom:0; }
+  .rm-item::before{
+    content:''; position:absolute; left:-28px; top:4px; width:11px; height:11px; border-radius:50%;
+    background:var(--ink); border:2px solid var(--teal);
+  }
+  .rm-item h3{ font-size:17px; margin-bottom:4px; }
+  .rm-item .duration{ font-size:12px; color:var(--amber); margin-bottom:6px; display:block; }
+  .rm-item p{ color:var(--text-dim); font-size:14px; max-width:520px; }
+
+  /* Opportunities */
+  .opp-card{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-card); padding:20px; }
+  .opp-card h3{ font-size:16.5px; margin-bottom:8px; }
+  .opp-card p{ color:var(--text-dim); font-size:13.5px; margin-bottom:10px; }
+  .tag{ display:inline-block; font-size:11px; padding:3px 9px; border-radius:20px; background:var(--panel-light); color:var(--teal); border:1px solid var(--border); }
+
+  /* Exams */
+  .exam-filters{ display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .filter-chip{ padding:7px 14px; border-radius:20px; border:1px solid var(--border); background:var(--panel); font-size:13px; color:var(--text-dim); }
+  .filter-chip.active{ background:var(--amber); color:var(--ink); border-color:var(--amber); }
+  .exam-card{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-card); margin-bottom:14px; overflow:hidden; }
+  .exam-head{ padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .exam-head-left h3{ font-size:17px; margin-bottom:4px; }
+  .exam-head-left .meta{ font-size:12.5px; color:var(--text-dim); }
+  .exam-type{ font-size:11px; padding:3px 10px; border-radius:20px; border:1px solid var(--border); white-space:nowrap; }
+  .exam-type.gov{ color:var(--amber); border-color:var(--amber-dim); }
+  .exam-type.priv{ color:var(--teal); border-color:var(--teal); }
+  .exam-body{ display:none; padding:0 20px 20px; border-top:1px solid var(--border); }
+  .exam-body.open{ display:block; padding-top:16px; }
+  .exam-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .exam-field-label{ font-size:11.5px; color:var(--amber); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
+  .exam-field-val{ font-size:13.5px; color:var(--text); }
+  .syllabus-tags{ display:flex; flex-wrap:wrap; gap:6px; }
+  .syllabus-tags span{ font-size:12px; padding:4px 10px; background:var(--panel-light); border-radius:6px; color:var(--text-dim); }
+  .resource-list a{ display:block; font-size:13.5px; color:var(--teal); text-decoration:none; margin-bottom:6px; }
+  .resource-list a:hover{ text-decoration:underline; }
+  .exam-toggle-btn{ background:none; border:1px solid var(--border); color:var(--text-dim); border-radius:6px; padding:8px 12px; font-size:13px; }
+
+  /* Skill dev / quiz */
+  .qcard{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-card); padding:24px; }
+  .qcard .qmeta{ font-size:12px; color:var(--amber); margin-bottom:10px; }
+  .qcard h3{ font-size:18px; margin-bottom:18px; line-height:1.4; }
+  .opt-list{ display:flex; flex-direction:column; gap:9px; margin-bottom:16px; }
+  .opt{ text-align:left; padding:12px 15px; background:var(--panel-light); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:14px; }
+  .opt.correct{ border-color:var(--teal); background:rgba(63,167,150,.14); }
+  .opt.wrong{ border-color:var(--coral); background:rgba(232,96,76,.14); }
+  .qfeedback{ font-size:13.5px; color:var(--text-dim); min-height:20px; margin-bottom:14px; }
+  .track-select{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:22px; }
+  .skill-why{ font-size:13.5px; color:var(--text-dim); margin-bottom:16px; }
+  .skill-rec{ display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-top:1px solid var(--border); }
+  .skill-rec:first-of-type{ border-top:none; padding-top:0; }
+  .skill-rec input[type=checkbox]{ margin-top:3px; width:16px; height:16px; accent-color:var(--teal); flex-shrink:0; }
+  .skill-rec .skill-name{ font-size:14.5px; margin-bottom:3px; }
+  .skill-rec.done .skill-name{ color:var(--text-dim); text-decoration:line-through; }
+  .skill-rec .skill-why-line{ font-size:12.5px; color:var(--text-dim); }
+
+  /* Streak */
+  .streak-hero{ display:flex; align-items:center; gap:32px; margin-bottom:26px; flex-wrap:wrap; }
+  .streak-num{ font-family:'Zilla Slab',serif; font-size:64px; color:var(--amber); line-height:1; }
+  .streak-num span{ font-size:18px; color:var(--text-dim); font-family:'IBM Plex Sans',sans-serif; margin-left:6px; }
+  .streak-week{ display:flex; gap:8px; }
+  .streak-day{ width:34px; height:34px; border-radius:8px; background:var(--panel-light); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-dim); }
+  .streak-day.done{ background:var(--teal); color:var(--ink); border-color:var(--teal); font-weight:700; }
+  .milestone-row{ display:flex; gap:14px; flex-wrap:wrap; margin-top:22px; }
+  .milestone{ flex:1; min-width:150px; background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-card); padding:16px; text-align:center; }
+  .milestone.earned{ border-color:var(--amber); }
+  .milestone .m-num{ font-family:'Zilla Slab',serif; font-size:26px; color:var(--text-dim); }
+  .milestone.earned .m-num{ color:var(--amber); }
+  .milestone .m-label{ font-size:12px; color:var(--text-dim); margin-top:4px; }
+
+  .certificate{
+    background:var(--paper); color:var(--ink); border-radius:6px; padding:44px; text-align:center;
+    border:2px solid var(--amber); margin-top:22px; position:relative;
+  }
+  .certificate::before{
+    content:''; position:absolute; inset:8px; border:1px solid var(--amber-dim); border-radius:4px; pointer-events:none;
+  }
+  .certificate .cert-eyebrow{ font-size:12px; letter-spacing:.08em; color:var(--amber-dim); margin-bottom:10px;}
+  .certificate h2{ font-size:30px; margin-bottom:6px; }
+  .certificate .cert-name{ font-family:'Zilla Slab',serif; font-size:26px; margin:14px 0; border-bottom:1px solid var(--amber-dim); display:inline-block; padding-bottom:6px; }
+  .certificate p{ font-size:14px; color:#4a4638; max-width:420px; margin:0 auto 6px; }
+  .certificate .cert-date{ font-size:12.5px; color:#7a7566; margin-top:16px; }
+
+  /* Chatbot */
+  #chat-fab{
+    position:fixed; bottom:26px; right:26px; width:56px; height:56px; border-radius:50%;
+    background:var(--amber); border:none; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 20px rgba(232,163,61,.35); z-index:50;
+  }
+  #chat-fab svg{ width:24px; height:24px; }
+  #chat-panel{
+    position:fixed; bottom:96px; right:26px; width:340px; max-width:88vw; height:440px; background:var(--panel);
+    border:1px solid var(--border); border-radius:14px; display:none; flex-direction:column; overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,.4); z-index:50;
+  }
+  #chat-panel.open{ display:flex; }
+  .chat-head{ padding:16px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .chat-head b{ font-family:'Zilla Slab',serif; font-size:16px; }
+  .chat-head span{ font-size:11.5px; color:var(--teal); }
+  #chat-body{ flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+  .msg{ max-width:82%; padding:9px 13px; border-radius:12px; font-size:13.5px; line-height:1.45; }
+  .msg.bot{ background:var(--panel-light); align-self:flex-start; border-bottom-left-radius:3px; }
+  .msg.user{ background:var(--amber); color:var(--ink); align-self:flex-end; border-bottom-right-radius:3px; }
+  .chat-suggest{ display:flex; flex-wrap:wrap; gap:6px; padding:0 16px 10px; }
+  .chat-suggest button{ font-size:11.5px; padding:6px 10px; background:var(--panel-light); border:1px solid var(--border); border-radius:20px; color:var(--text-dim); }
+  #chat-input-row{ display:flex; border-top:1px solid var(--border); }
+  #chat-input{ flex:1; background:none; border:none; color:var(--text); padding:13px 14px; font-size:13.5px; font-family:inherit; }
+  #chat-input:focus{ outline:none; }
+  #chat-send{ background:none; border:none; color:var(--amber); padding:0 16px; font-weight:600; font-size:13px; }
+
+  @media (max-width:860px){
+    .sidebar{ display:none; }
+    main{ padding:26px 18px; }
+    .grid2, .exam-grid{ grid-template-columns:1fr; }
+    .grid3{ grid-template-columns:1fr; }
+    .choice-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= ONBOARDING ================= -->
+<div id="onboarding">
+  <div class="onboard-card">
+    <div class="onboard-mark">
+      <svg class="logo-mark" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="29" stroke="#E8A33D" stroke-width="3"/><path d="M32 10 L41 32 L32 54 L23 32 Z" fill="#E8A33D"/><circle cx="32" cy="32" r="4" fill="#12141C"/></svg>
+      DISHA
+    </div>
+    <div class="progress-track" id="progressTrack"></div>
+
+    <form id="onboardForm">
+      <div class="step active" data-step="0">
+        <h2>Let's get you oriented.</h2>
+        <p class="sub">A few questions so Disha can build a path that's actually yours — not a generic one.</p>
+        <div class="field"><label>Your name</label><input type="text" id="f-name" required placeholder="e.g. Ananya Sharma"></div>
+        <div class="field"><label>Email</label><input type="email" id="f-email" required placeholder="you@example.com"></div>
+      </div>
+
+      <div class="step" data-step="1">
+        <h2>Where are you right now?</h2>
+        <p class="sub">This decides how your roadmap starts.</p>
+        <div class="choice-grid" id="statusGrid"></div>
+        <div class="field" style="margin-top:16px;"><label>In a sentence, what are you currently doing?</label><input type="text" id="f-current" placeholder="e.g. 12th grade, PCM stream"></div>
+      </div>
+
+      <div class="step" data-step="2">
+        <h2>What pulls you in?</h2>
+        <p class="sub">Pick the field closest to what you want to move toward. You can explore others later.</p>
+        <div class="choice-grid" id="goalGrid"></div>
+      </div>
+
+      <div class="step" data-step="3">
+        <h2>A little more context.</h2>
+        <p class="sub">Optional, but it sharpens your suggestions.</p>
+        <div class="field"><label>What attracts you most about this field?</label><input type="text" id="f-attract" placeholder="e.g. solving real problems, stability, creativity"></div>
+        <div class="field"><label>Current industry (if you're working)</label><input type="text" id="f-industry" placeholder="e.g. not working yet / retail / IT support"></div>
+        <div class="field"><label>Where do you want to be in a few years?</label><input type="text" id="f-future" placeholder="e.g. crack a government exam, join a good company"></div>
+      </div>
+
+      <div class="step-nav">
+        <button type="button" class="btn ghost" id="backBtn">← Back</button>
+        <button type="button" class="btn" id="nextBtn">Continue</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="logo-mark small" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="29" stroke="#E8A33D" stroke-width="3"/><path d="M32 10 L41 32 L32 54 L23 32 Z" fill="#E8A33D"/><circle cx="32" cy="32" r="4" fill="#12141C"/></svg>
+      Disha
+    </div>
+    <nav class="nav-path" id="navPath">
+      <div class="nav-item active" data-panel="roadmap"><span class="node"></span> Your roadmap</div>
+      <div class="nav-item" data-panel="opportunities"><span class="node"></span> Opportunities</div>
+      <div class="nav-item" data-panel="exams"><span class="node"></span> Exams &amp; deadlines</div>
+      <div class="nav-item" data-panel="skills"><span class="node"></span> Skill practice</div>
+      <div class="nav-item" data-panel="streak"><span class="node"></span> Streak &amp; certificates</div>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="user-chip">
+        <div class="avatar" id="avatarInitial">A</div>
+        <div><b id="sidebarName">Student</b><span id="sidebarGoal">—</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- ROADMAP -->
+    <section class="panel active" id="panel-roadmap">
+      <div class="panel-head">
+        <h1 id="roadmapTitle">Your roadmap</h1>
+        <p id="roadmapIntro">Built from where you are and where you want to go.</p>
+        <button class="btn ghost" id="clearFocusBtn" style="display:none;padding:8px 0;">← Back to your general field roadmap</button>
+      </div>
+      <div class="card"><div class="roadmap-list" id="roadmapList"></div></div>
+    </section>
+
+    <!-- OPPORTUNITIES -->
+    <section class="panel" id="panel-opportunities">
+      <div class="panel-head">
+        <h1>Opportunities worth knowing about</h1>
+        <p>Paths inside and around your chosen field — some obvious, some easy to miss.</p>
+      </div>
+      <div class="grid2" id="oppGrid"></div>
+    </section>
+
+    <!-- EXAMS -->
+    <section class="panel" id="panel-exams">
+      <div class="panel-head">
+        <h1>Exams &amp; deadlines</h1>
+        <p>Government and private exams relevant to your field, with syllabus, eligibility and resources. Dates change every year — always confirm on the official site before you rely on one.</p>
+      </div>
+      <div class="exam-filters" id="examFilters"></div>
+      <div id="examList"></div>
+    </section>
+
+    <!-- SKILLS -->
+    <section class="panel" id="panel-skills">
+      <div class="panel-head">
+        <h1>Skill practice</h1>
+        <p>One question a day keeps momentum. Or run a full quiz when you have time.</p>
+      </div>
+      <div class="track-select" id="trackSelect"></div>
+
+      <h3 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;">MUST-DO SKILLS &amp; COURSES</h3>
+      <div class="card" id="skillRecsCard" style="margin-bottom:28px;"></div>
+
+      <div class="grid2">
+        <div>
+          <h3 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;">TODAY'S QUESTION</h3>
+          <div class="qcard" id="dailyQCard"></div>
+        </div>
+        <div>
+          <h3 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;">QUICK QUIZ</h3>
+          <div class="qcard" id="quizCard"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STREAK -->
+    <section class="panel" id="panel-streak">
+      <div class="panel-head">
+        <h1>Streak &amp; certificates</h1>
+        <p>Consistency compounds. Check in once a day to keep your streak alive.</p>
+      </div>
+      <div class="card">
+        <div class="streak-hero">
+          <div><div class="streak-num" id="streakNum">0<span>day streak</span></div></div>
+          <div class="streak-week" id="streakWeek"></div>
+          <button class="btn teal" id="checkInBtn">Check in today</button>
+        </div>
+        <div class="milestone-row" id="milestoneRow"></div>
+      </div>
+      <div id="certSlot"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= CHATBOT ================= -->
+<button id="chat-fab" aria-label="Open assistant">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#12141C" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+</button>
+<div id="chat-panel">
+  <div class="chat-head"><div><b>Disha assistant</b><br><span>rule-based demo</span></div><button class="btn ghost" id="chatClose" style="padding:4px 8px;">✕</button></div>
+  <div id="chat-body"></div>
+  <div class="chat-suggest" id="chatSuggest"></div>
+  <div id="chat-input-row">
+    <input id="chat-input" type="text" placeholder="Ask about your path, an exam, anything...">
+    <button id="chat-send">Send</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+const FIELDS = [
+  {id:'engineering-tech', label:'Engineering & Technology'},
+  {id:'medicine-healthcare', label:'Medicine & Healthcare'},
+  {id:'govt-civil-services', label:'Government & Civil Services'},
+  {id:'banking-finance', label:'Banking & Finance'},
+  {id:'design-creative', label:'Design & Creative'},
+  {id:'business-management', label:'Business & Management'},
+  {id:'defence-police', label:'Defence & Police'},
+  {id:'teaching-academia', label:'Teaching & Academia'},
+];
+
+const STATUS = [
+  {id:'school', label:'School student'},
+  {id:'college', label:'College student'},
+  {id:'graduate', label:'Graduate, deciding next step'},
+  {id:'working', label:'Working, want a change'},
+];
+
+const ROADMAPS = {
+  'engineering-tech': [
+    {t:'Lock your entrance exam target', d:'6-12 months', p:'Pick JEE Main / state CET or a lateral-entry route depending on where you are. Everything else follows from this choice.'},
+    {t:'Build fundamentals in Maths & core science', d:'Ongoing', p:'Strong basics here compound into every semester of engineering later.'},
+    {t:'Pick a specialisation once exposed to basics', d:'Year 2 of degree', p:'CS, Mechanical, Electrical, etc. — try small projects before committing emotionally.'},
+    {t:'Start one real project + one internship', d:'Year 2-3', p:'A GitHub with 2-3 finished projects beats a long list of courses on a resume.'},
+    {t:'Prepare for placements or GATE', d:'Final year', p:'Decide job vs. higher studies early — the prep paths diverge.'},
+  ],
+  'medicine-healthcare': [
+    {t:'Target NEET (or the relevant allied-health entrance)', d:'12-18 months', p:'Biology, Chemistry and Physics fundamentals, revised on a strict cycle.'},
+    {t:'Shortlist colleges & seat-matrix realistically', d:'After first mock scores', p:'Government vs private vs deemed — costs differ hugely; plan finances early.'},
+    {t:'Build clinical exposure once in college', d:'Ongoing', p:'Shadowing, volunteering, and ward postings sharpen the decision on specialisation.'},
+    {t:'Plan for PG entrance (NEET-PG) early', d:'Final years of MBBS', p:'The real specialisation battle is fought here — start reading a year ahead.'},
+  ],
+  'govt-civil-services': [
+    {t:'Pick your service family', d:'Now', p:'UPSC (IAS/IPS/IFS), State PSC, SSC, or Banking — each has a different prep rhythm.'},
+    {t:'Build a daily current-affairs + NCERT base', d:'12-24 months', p:'This base serves every exam in this family, so start before you\'ve even chosen one.'},
+    {t:'Choose an optional subject (for UPSC Mains)', d:'6 months before Mains', p:'Pick by scoring potential and genuine interest, not just popularity.'},
+    {t:'Layer in mock interviews & answer writing', d:'Final 6 months', p:'This is where most candidates lose marks they could easily keep.'},
+  ],
+  'banking-finance': [
+    {t:'Pick your entry exam (IBPS, SBI, RBI, insurance)', d:'6-12 months', p:'Each has different weightage on quant, reasoning, English and GK.'},
+    {t:'Drill quant & reasoning speed daily', d:'Ongoing', p:'Banking exams are won on speed and accuracy, not just correctness.'},
+    {t:'Track sector-specific current affairs', d:'Last 3 months before exam', p:'RBI monetary policy, budget highlights, banking terms — high yield, low effort.'},
+    {t:'Prep for interview / group discussion round', d:'After mains clears', p:'Many candidates under-prepare for this and lose an otherwise secure seat.'},
+  ],
+  'design-creative': [
+    {t:'Build a foundational portfolio', d:'3-6 months', p:'Even 5-6 strong, varied pieces beat 20 rushed ones.'},
+    {t:'Pick a lane: UX, graphic, motion, product', d:'After first portfolio pass', p:'Depth in one lane gets you hired faster than breadth across all of them.'},
+    {t:'Get real feedback from working designers', d:'Ongoing', p:'Communities, mentorship calls, or entrance-exam interviews (NID/NIFT/UCEED) all work.'},
+    {t:'Take on freelance or internship work', d:'As soon as portfolio is presentable', p:'Real client constraints teach things tutorials never will.'},
+  ],
+  'business-management': [
+    {t:'Decide: entrepreneurship, corporate, or an MBA route', d:'Now', p:'This changes whether you should be building, applying, or studying next.'},
+    {t:'Build quant + reasoning + verbal ability', d:'6-12 months', p:'The core of CAT/XAT/other MBA entrances — and useful regardless of the route.'},
+    {t:'Get real work exposure', d:'Ongoing', p:'Internships or a starter job add credibility that no exam score can replace.'},
+    {t:'Target your entrance / applications window', d:'Application season', p:'Deadlines here are unforgiving — track them from month one, not month eleven.'},
+  ],
+  'defence-police': [
+    {t:'Pick your entry: NDA, CDS, state police SI/constable', d:'Now', p:'Age and education cutoffs differ sharply — check eligibility before committing years.'},
+    {t:'Start physical training alongside written prep', d:'From day one', p:'Physical standards eliminate strong written-test candidates every year — don\'t neglect this.'},
+    {t:'Drill General Knowledge & reasoning', d:'Ongoing', p:'Static GK and current affairs carry heavy weight across these exams.'},
+    {t:'Prepare for SSB / interview rounds', d:'After written exam', p:'Personality-based rounds are won over months, not the final week.'},
+  ],
+  'teaching-academia': [
+    {t:'Pick your track: school teaching (TET/CTET) or higher-ed (NET/SET)', d:'Now', p:'Eligibility, syllabus and pay scales differ a lot between the two.'},
+    {t:'Build subject depth + pedagogy basics', d:'6-12 months', p:'Both content mastery and teaching-method sections are tested.'},
+    {t:'Get classroom experience', d:'Ongoing', p:'Tuition, assistantships, or student-teaching internships all count.'},
+    {t:'Track state-wise recruitment cycles', d:'Ongoing', p:'Many state teaching vacancies open on irregular, state-specific calendars.'},
+  ],
+};
+
+const OPPORTUNITIES = {
+  'engineering-tech': [
+    {t:'Core engineering roles', d:'PSUs and manufacturing firms still hire heavily through GATE scores — often overlooked in favour of software roles.'},
+    {t:'Software & product roles', d:'Open-source contributions and small shipped projects often matter more than college brand here.'},
+    {t:'Higher studies abroad', d:'GRE + strong project portfolio can open funded master\'s routes.'},
+    {t:'Government tech roles', d:'ISRO, DRDO and similar bodies recruit engineers directly through dedicated exams.'},
+  ],
+  'medicine-healthcare': [
+    {t:'Allied health fields', d:'Physiotherapy, nursing, and paramedical sciences have shorter, less crowded entrance paths.'},
+    {t:'Public health & research', d:'ICMR and public-health postgraduate programs are a growing, less saturated route.'},
+    {t:'Armed forces medical services', d:'AFMC and similar routes combine medical training with a defence career.'},
+    {t:'Health-tech & telemedicine', d:'A fast-growing space for clinically trained people who also like technology.'},
+  ],
+  'govt-civil-services': [
+    {t:'State PSC exams', d:'Less competition than UPSC, and syllabus overlap means your prep isn\'t wasted.'},
+    {t:'SSC CGL / CHSL', d:'A strong fallback track into central government jobs while you attempt UPSC.'},
+    {t:'Judicial services', d:'A distinct exam track for law graduates, often underexplored.'},
+    {t:'Public policy & think tanks', d:'A non-exam route into government-adjacent work for strong writers and researchers.'},
+  ],
+  'banking-finance': [
+    {t:'Insurance sector exams', d:'LIC AAO, NIACL and similar exams share prep overlap with banking but have less competition.'},
+    {t:'RBI Grade B / NABARD', d:'Higher-paying, research-oriented roles within the banking exam family.'},
+    {t:'Financial analyst / equity research', d:'A CFA-linked private-sector route as an alternative to public-sector banking.'},
+    {t:'FinTech operations & compliance', d:'A growing space that values banking-exam-style quant skills.'},
+  ],
+  'design-creative': [
+    {t:'In-house design roles at startups', d:'Faster growth and broader exposure than large-agency design teams.'},
+    {t:'Freelance / independent practice', d:'Platforms and direct networking can build income before a formal job.'},
+    {t:'Design research', d:'A less crowded, research-heavy track feeding into product decisions.'},
+    {t:'Government design institutes (NID/NIFT)', d:'Structured entrance-based routes with strong industry placement records.'},
+  ],
+  'business-management': [
+    {t:'Tier-2 B-school routes', d:'Strong placement records exist outside the handful of most-discussed institutes.'},
+    {t:'Startup operations roles', d:'Broad, fast-paced exposure that a large corporate role often can\'t match early on.'},
+    {t:'Government management cadres', d:'IRMA and similar niche institutes feed directly into cooperative and rural management roles.'},
+    {t:'Family business modernisation', d:'An underused path for those with an existing family business to formalise and grow.'},
+  ],
+  'defence-police': [
+    {t:'Territorial Army', d:'A part-time defence service route for those not ready to commit full-time.'},
+    {t:'Central Armed Police Forces', d:'CRPF, BSF, CISF and others recruit through SSC-linked and dedicated exams.'},
+    {t:'State police specialised wings', d:'Cyber cell, forensics, and traffic wings offer non-traditional policing careers.'},
+    {t:'Defence civilian roles', d:'DRDO, ordnance factories and cantonment boards hire civilians alongside uniformed staff.'},
+  ],
+  'teaching-academia': [
+    {t:'EdTech content & curriculum roles', d:'A non-classroom route that still uses subject-matter depth directly.'},
+    {t:'Research assistantships', d:'A path into academia that starts before qualifying a full NET/SET.'},
+    {t:'Special education', d:'A high-need, less competitive teaching specialisation.'},
+    {t:'Government school recruitment drives', d:'State-run recruitment often has less competition than urban private schools.'},
+  ],
+};
+
+// Exams: dates intentionally marked as "check official site" rather than guessed —
+// notification cycles shift every year and a wrong date here would actively hurt a student.
+const EXAMS = [
+  {name:'JEE Main', cat:'engineering-tech', type:'gov', eligibility:'Class 12 pass with PCM; no strict age limit.', fee:'≈ ₹1,000 (Gen, single paper) — varies by category & papers', dateNote:'Two sessions/year (Jan & Apr) — confirm on jeemain.nta.nic.in', syllabus:['Physics — Mechanics, Electrodynamics','Chemistry — Physical, Organic, Inorganic','Maths — Algebra, Calculus, Coordinate Geometry'], resources:[{label:'NCERT textbooks (Class 11-12)', url:'https://ncert.nic.in'},{label:'NTA JEE Main official portal & mock tests', url:'https://jeemain.nta.nic.in'},{label:'Previous year papers (via NTA site)', url:'https://jeemain.nta.nic.in'}]},
+  {name:'GATE', cat:'engineering-tech', type:'gov', eligibility:'Final-year or completed bachelor\'s in engineering/science.', fee:'≈ ₹900-1,800 depending on category', dateNote:'Held every February — the host IIT/IISc changes each year, so search "GATE [year] official website" to find that year\'s portal', syllabus:['Core branch subjects','Engineering Mathematics','General Aptitude'], resources:[{label:'GOAPS application portal (search current year)'},{label:'Branch-wise standard textbooks'},{label:'Previous year papers (search current year host site)'}]},
+  {name:'NEET (UG)', cat:'medicine-healthcare', type:'gov', eligibility:'Class 12 pass with PCB; age criteria as per current NTA notice.', fee:'≈ ₹1,700 (Gen) — check current notification', dateNote:'Typically held in May — confirm on neet.nta.nic.in', syllabus:['Physics','Chemistry','Biology (Botany + Zoology) — NCERT-based'], resources:[{label:'NCERT Biology, Physics, Chemistry', url:'https://ncert.nic.in'},{label:'NTA NEET official portal & mock tests', url:'https://neet.nta.nic.in'},{label:'State counselling portals (search your state\'s DME/DGHS)'}]},
+  {name:'UPSC Civil Services Exam', cat:'govt-civil-services', type:'gov', eligibility:'Graduate in any discipline; age 21-32 (Gen), relaxations for reserved categories.', fee:'≈ ₹100 (Gen), exempted for some categories', dateNote:'Prelims usually in May-June — confirm on upsc.gov.in', syllabus:['Prelims — General Studies, CSAT','Mains — Essay, GS I-IV, Optional subject, Language papers','Interview — Personality Test'], resources:[{label:'NCERT Class 6-12 as base', url:'https://ncert.nic.in'},{label:'UPSC official site — notifications & syllabus', url:'https://upsc.gov.in'},{label:'PIB for current affairs', url:'https://pib.gov.in'}]},
+  {name:'SSC CGL', cat:'govt-civil-services', type:'gov', eligibility:'Graduate in any discipline; age typically 18-32 depending on post.', fee:'≈ ₹100 (Gen), exempted for some categories', dateNote:'Notification usually mid-year — confirm on ssc.nic.in', syllabus:['Quantitative Aptitude','English Comprehension','General Intelligence & Reasoning','General Awareness'], resources:[{label:'SSC official site — papers & notices', url:'https://ssc.nic.in'},{label:'NCERT Maths (6-10) for quant basics', url:'https://ncert.nic.in'},{label:'PIB for current affairs digest', url:'https://pib.gov.in'}]},
+  {name:'IBPS PO', cat:'banking-finance', type:'gov', eligibility:'Graduate in any discipline; age 20-30, relaxations apply.', fee:'≈ ₹850 (Gen/OBC), ₹175 (SC/ST/PwBD)', dateNote:'Prelims usually Aug-Sep — confirm on ibps.in', syllabus:['Quantitative Aptitude','Reasoning Ability','English Language','General/Banking Awareness','Computer Aptitude'], resources:[{label:'IBPS official site — notifications & papers', url:'https://www.ibps.in'},{label:'RBI site for banking & economy updates', url:'https://www.rbi.org.in'},{label:'Speed-maths practice — search "IBPS PO previous papers"'}]},
+  {name:'RBI Grade B', cat:'banking-finance', type:'gov', eligibility:'Graduate with min. aggregate marks as per notification; age 21-30.', fee:'≈ ₹850 (Gen/OBC/EWS), ₹100 (SC/ST/PwBD)', dateNote:'Notification usually mid-year — confirm on rbi.org.in', syllabus:['General Awareness','English','Quantitative Aptitude','Reasoning','Economic & Social Issues (Phase II)','Finance & Management (Phase II)'], resources:[{label:'RBI official site — publications & annual reports', url:'https://www.rbi.org.in'},{label:'RBI recruitment notifications', url:'https://opportunities.rbi.org.in'},{label:'Standard economics textbooks — search NCERT Economics'}]},
+  {name:'NID DAT (Design Aptitude Test)', cat:'design-creative', type:'gov', eligibility:'Class 12 pass (UG) or bachelor\'s degree (PG); varies by programme.', fee:'≈ ₹2,500-4,000 depending on programme', dateNote:'Usually held Dec-Jan — confirm on admissions.nid.edu', syllabus:['Design aptitude & observation','Sketching & visualisation','General knowledge & creativity'], resources:[{label:'NID official admissions site & sample papers', url:'https://admissions.nid.edu'},{label:'Portfolio-building — search "NID DAT portfolio tips"'},{label:'Sketching practice — search "NID DAT sketching practice"'}]},
+  {name:'CAT (Common Admission Test)', cat:'business-management', type:'priv', eligibility:'Bachelor\'s degree with min. 50% marks (45% for reserved categories).', fee:'≈ ₹2,300 (Gen), ₹1,150 (reserved categories)', dateNote:'Held last Sunday of November — confirm on iimcat.ac.in', syllabus:['Verbal Ability & Reading Comprehension','Data Interpretation & Logical Reasoning','Quantitative Ability'], resources:[{label:'CAT official site — notifications & mock tests', url:'https://iimcat.ac.in'},{label:'Previous year CAT papers — search "CAT previous year papers"'},{label:'Daily reading habit — editorials & long-form articles'}]},
+  {name:'NDA (National Defence Academy)', cat:'defence-police', type:'gov', eligibility:'Class 12 pass (PCM for Air Force/Navy); unmarried; age 16.5-19.5.', fee:'≈ ₹100 (Gen), exempted for SC/ST', dateNote:'Held twice a year — confirm on upsc.gov.in', syllabus:['Mathematics','General Ability Test (English + GK)','SSB Interview after written exam'], resources:[{label:'UPSC official site — NDA notifications', url:'https://upsc.gov.in'},{label:'NCERT Maths (9-12)', url:'https://ncert.nic.in'},{label:'Physical fitness plan — search "NDA physical standards"'}]},
+  {name:'CTET (Central Teacher Eligibility Test)', cat:'teaching-academia', type:'gov', eligibility:'Graduate/12th + diploma depending on the paper (I or II) attempted.', fee:'≈ ₹1,000 (Gen, one paper) — varies by category', dateNote:'Held twice a year — confirm on ctet.nic.in', syllabus:['Child Development & Pedagogy','Language I & II','Mathematics / EVS or relevant subject method'], resources:[{label:'CTET official site — notifications & papers', url:'https://ctet.nic.in'},{label:'NCERT pedagogy textbooks', url:'https://ncert.nic.in'},{label:'State-specific TET syllabi — search your state\'s TET board'}]},
+  {name:'UGC NET', cat:'teaching-academia', type:'gov', eligibility:'Master\'s degree with min. 55% marks (50% for reserved categories).', fee:'≈ ₹1,150 (Gen) — varies by category', dateNote:'Held twice a year — confirm on ugcnet.nta.nic.in', syllabus:['Paper I — Teaching & Research Aptitude','Paper II — Subject-specific'], resources:[{label:'UGC NET official portal & mock tests', url:'https://ugcnet.nta.nic.in'},{label:'Previous year papers (via NTA site)', url:'https://ugcnet.nta.nic.in'},{label:'Subject-specific standard textbooks — search your subject syllabus'}]},
+];
+
+// Exam-specific roadmaps — shown when a student focuses on one exam from the Exams tab,
+// instead of only the broader field-level roadmap.
+const ROADMAP_BY_EXAM = {
+  'JEE Main': [
+    {t:'Finish NCERT + build formula sheets', d:'Now – 6 months out', p:'Every JEE topic traces back to NCERT fundamentals — skipping this to jump to tough problems backfires.'},
+    {t:'Topic-wise practice with timed sets', d:'3-6 months before exam', p:'Solve by chapter first, then mix topics to simulate the real exam.'},
+    {t:'Full-length mocks under exam conditions', d:'Last 2 months', p:'At least one full mock a week, followed by an honest error-log review.'},
+    {t:'Revise weak chapters + light practice only', d:'Final 2 weeks', p:'No new topics this close — consolidate what you already know.'},
+  ],
+  'GATE': [
+    {t:'Map the syllabus to your branch subjects', d:'8-10 months out', p:'GATE rewards depth in core subjects over breadth — prioritise high-weightage topics.'},
+    {t:'Standard textbook + previous 10-year papers', d:'6-8 months out', p:'Previous papers reveal GATE\'s actual question style better than any guide.'},
+    {t:'Weekly subject-wise mock tests', d:'3-6 months out', p:'Track your General Aptitude score too — it\'s often where easy marks are lost.'},
+    {t:'Full mocks + revision cycles', d:'Final 2 months', p:'Simulate the exact 3-hour format at least 6-8 times before the real exam.'},
+  ],
+  'NEET (UG)': [
+    {t:'NCERT Biology cover-to-cover, twice', d:'Now – 8 months out', p:'NEET Biology is heavily NCERT-line-based — this alone can decide your rank.'},
+    {t:'Physics & Chemistry numerical practice', d:'6-8 months out', p:'Build speed on numericals; NEET rewards accuracy under time pressure.'},
+    {t:'Full-length mocks + NCERT re-revision', d:'Last 3 months', p:'Alternate mock days with focused NCERT re-reading of weak chapters.'},
+    {t:'Plan counselling & seat-matrix research', d:'After exam, before result', p:'Understand state vs all-India quota rules before results so you can decide fast.'},
+  ],
+  'UPSC Civil Services Exam': [
+    {t:'NCERT base + daily newspaper habit', d:'12-18 months out', p:'This foundation carries through Prelims, Mains, and even the interview.'},
+    {t:'Prelims-focused practice — CSAT & GS MCQs', d:'6 months before Prelims', p:'CSAT is qualifying but still needs regular practice to avoid last-minute risk.'},
+    {t:'Optional subject + answer writing for Mains', d:'After Prelims, before Mains', p:'Daily answer writing practice is what separates good Mains scores from average ones.'},
+    {t:'Mock interviews & current affairs polish', d:'After Mains result', p:'The interview tests personality and awareness, not just facts — practice speaking, not just reading.'},
+  ],
+  'SSC CGL': [
+    {t:'Build quant & reasoning speed from NCERT base', d:'6-9 months out', p:'Speed matters as much as accuracy in SSC\'s tier structure.'},
+    {t:'English comprehension + grammar drilling', d:'Alongside quant prep', p:'A commonly under-prepared section that\'s easy to improve quickly.'},
+    {t:'Tier 1 & Tier 2 mock tests', d:'Last 3 months', p:'Practise both tiers — many candidates only prep for Tier 1 and get caught out later.'},
+    {t:'Document verification & post preference prep', d:'After final result', p:'Know your preferred posts and departments before the choice-filling stage.'},
+  ],
+  'IBPS PO': [
+    {t:'Daily quant & reasoning speed drills', d:'4-6 months out', p:'Banking prelims are a speed test first — accuracy alone isn\'t enough.'},
+    {t:'English + banking awareness alongside', d:'Ongoing', p:'Banking awareness is high-yield, low-effort if revised weekly.'},
+    {t:'Sectional & full mocks for Prelims + Mains', d:'Last 2 months before each stage', p:'Mains has higher difficulty and a descriptive English component — prep separately.'},
+    {t:'Interview & group exercise prep', d:'After Mains result', p:'Read up on current banking policy and practice articulating answers clearly.'},
+  ],
+  'RBI Grade B': [
+    {t:'Build economics & finance reading habit', d:'6-9 months out', p:'Phase II tests Economic & Social Issues and Finance — start reading early, it\'s content-heavy.'},
+    {t:'Quant, reasoning & English for Phase I', d:'Alongside Phase II reading', p:'Phase I is the qualifying gate — don\'t under-invest in it while focusing on Phase II depth.'},
+    {t:'Essay & descriptive writing practice', d:'3 months before Phase II', p:'RBI Grade B has a heavier writing component than most banking exams.'},
+    {t:'Interview prep with current economic policy', d:'After Phase II result', p:'Be ready to discuss RBI\'s recent monetary policy stance in your own words.'},
+  ],
+  'NID DAT (Design Aptitude Test)': [
+    {t:'Build a sketching & observation habit', d:'6-9 months out', p:'Daily sketching, even 20 minutes, builds the visual fluency DAT tests for.'},
+    {t:'Prelims practice — visual & general aptitude', d:'3-6 months out', p:'Practice past papers to get comfortable with NID\'s unconventional question style.'},
+    {t:'Build a personal portfolio', d:'Ongoing, alongside prep', p:'Start collecting your best sketches and projects now — Mains studio test rewards a developed visual sense.'},
+    {t:'Studio test & interview prep', d:'After Prelims result', p:'Practice explaining your creative choices out loud — the interview probes your thinking, not just your output.'},
+  ],
+  'CAT (Common Admission Test)': [
+    {t:'Diagnostic test to find weak sections', d:'8-9 months out', p:'CAT rewards knowing where to spend your limited prep time.'},
+    {t:'Section-wise practice — VARC, DILR, Quant', d:'5-8 months out', p:'DILR is often the differentiator — invest disproportionate time here if it\'s weak.'},
+    {t:'Full mocks every week', d:'Last 3 months', p:'Mock-taking and post-mock analysis matter more than solving new questions at this stage.'},
+    {t:'WAT-PI prep for shortlisted calls', d:'After result, before B-school calls', p:'Read on current affairs and be ready to defend your CAT application form answers.'},
+  ],
+  'NDA (National Defence Academy)': [
+    {t:'Start physical training immediately', d:'From day one', p:'Physical standards eliminate strong written candidates every year — don\'t treat this as an afterthought.'},
+    {t:'Maths + General Ability Test prep', d:'6-9 months out', p:'NDA Maths is NCERT-based but time-pressured — build speed early.'},
+    {t:'Full-length written mocks', d:'Last 2-3 months', p:'Practice under strict time limits to build exam-day stamina.'},
+    {t:'SSB interview & group task preparation', d:'After written exam', p:'SSB assesses personality over days — start reading about the process well ahead of time.'},
+  ],
+  'CTET (Central Teacher Eligibility Test)': [
+    {t:'Pick Paper I or II based on your target level', d:'Now', p:'Paper I is for primary teaching, Paper II for upper-primary — eligibility and syllabus differ.'},
+    {t:'Child Development & Pedagogy focus', d:'3-6 months out', p:'This section is common to both papers and often decides the overall score.'},
+    {t:'Subject-specific content revision', d:'Alongside pedagogy prep', p:'Depth in your chosen subject matters as much as pedagogy theory.'},
+    {t:'Mock tests + previous year papers', d:'Last 6-8 weeks', p:'CTET question patterns repeat conceptually — previous papers are high-value practice.'},
+  ],
+  'UGC NET': [
+    {t:'Paper I — teaching & research aptitude basics', d:'Now', p:'Common to all candidates regardless of subject — don\'t neglect it while focusing on Paper II.'},
+    {t:'Subject-specific Paper II deep study', d:'4-6 months out', p:'Use your postgraduate syllabus as the backbone, supplemented by standard reference books.'},
+    {t:'Previous year papers by subject', d:'Last 3 months', p:'NET question patterns are fairly consistent year-on-year within a subject.'},
+    {t:'Decide JRF vs Assistant Professor track', d:'Before applying', p:'JRF opens research funding routes; both qualify you for teaching eligibility.'},
+  ],
+};
+
+const QUIZ_BANK = {
+  'engineering-tech': [
+    {q:'What is the SI unit of electrical resistance?', opts:['Ohm','Volt','Ampere','Watt'], a:0, exp:'Resistance is measured in Ohms (Ω), named after Georg Ohm.'},
+    {q:'Which data structure uses FIFO order?', opts:['Stack','Queue','Tree','Graph'], a:1, exp:'A Queue processes elements First-In-First-Out.'},
+    {q:'Newton\'s second law relates force to:', opts:['mass × velocity','mass × acceleration','mass / acceleration','velocity / time'], a:1, exp:'F = ma — force equals mass times acceleration.'},
+  ],
+  'medicine-healthcare': [
+    {q:'Which organ produces insulin?', opts:['Liver','Pancreas','Kidney','Spleen'], a:1, exp:'The pancreas produces insulin via its beta cells.'},
+    {q:'Normal human body temperature is approximately:', opts:['35°C','37°C','39°C','40°C'], a:1, exp:'Average normal body temperature is around 37°C (98.6°F).'},
+    {q:'Which blood cells are responsible for clotting?', opts:['Red blood cells','White blood cells','Platelets','Plasma cells'], a:2, exp:'Platelets (thrombocytes) are key to blood clotting.'},
+  ],
+  'govt-civil-services': [
+    {q:'The Indian Constitution was adopted on:', opts:['15 Aug 1947','26 Nov 1949','26 Jan 1950','2 Oct 1950'], a:1, exp:'The Constitution was adopted on 26 November 1949 and came into force on 26 January 1950.'},
+    {q:'Who is the head of the Indian judiciary?', opts:['President','Chief Justice of India','Attorney General','Speaker of Lok Sabha'], a:1, exp:'The Chief Justice of India heads the judiciary.'},
+    {q:'Fundamental Rights are enshrined in which part of the Constitution?', opts:['Part II','Part III','Part IV','Part V'], a:1, exp:'Part III of the Constitution deals with Fundamental Rights.'},
+  ],
+  'banking-finance': [
+    {q:'Repo rate is the rate at which:', opts:['RBI lends to commercial banks','Banks lend to customers','Banks lend to each other','Government borrows from RBI'], a:0, exp:'Repo rate is the rate at which RBI lends short-term funds to commercial banks.'},
+    {q:'NEFT stands for:', opts:['National Electronic Funds Transfer','National Exchange Fund Transaction','New Electronic Finance Terminal','National Economic Finance Trust'], a:0, exp:'NEFT = National Electronic Funds Transfer.'},
+    {q:'Which body regulates the Indian stock market?', opts:['RBI','SEBI','IRDAI','NABARD'], a:1, exp:'SEBI (Securities and Exchange Board of India) regulates the stock market.'},
+  ],
+  'design-creative': [
+    {q:'In design, "white space" primarily helps with:', opts:['Reducing print cost','Visual clarity & focus','Making pages longer','Nothing significant'], a:1, exp:'White space improves clarity and directs attention to key elements.'},
+    {q:'The color wheel\'s primary colors are:', opts:['Red, Green, Blue','Red, Yellow, Blue','Orange, Green, Purple','Black, White, Grey'], a:1, exp:'Traditional primary colors in art are red, yellow and blue.'},
+    {q:'A typeface with small strokes at letter ends is called:', opts:['Sans-serif','Serif','Monospace','Display'], a:1, exp:'Serif fonts have small decorative strokes at the ends of letters.'},
+  ],
+  'business-management': [
+    {q:'SWOT analysis stands for:', opts:['Strengths, Weaknesses, Opportunities, Threats','Sales, Workforce, Output, Targets','Systems, Work, Output, Time','Strategy, Work, Objectives, Tasks'], a:0, exp:'SWOT = Strengths, Weaknesses, Opportunities, Threats.'},
+    {q:'Break-even point is where:', opts:['Profit is maximum','Total revenue equals total cost','Sales are zero','Cost is minimum'], a:1, exp:'At break-even, total revenue equals total cost — no profit, no loss.'},
+    {q:'Which is NOT one of the 4 Ps of marketing?', opts:['Product','Price','Place','Profit'], a:3, exp:'The 4 Ps are Product, Price, Place, Promotion — not Profit.'},
+  ],
+  'defence-police': [
+    {q:'The Indian Army\'s highest peacetime rank is:', opts:['Field Marshal','General','Lieutenant General','Brigadier'], a:1, exp:'General is the highest active peacetime rank; Field Marshal is a rare wartime/honorary rank.'},
+    {q:'NDA cadets train together for which services?', opts:['Only Army','Army, Navy, Air Force','Only Police','Only Navy'], a:1, exp:'NDA trains cadets for the Army, Navy and Air Force jointly.'},
+    {q:'SSB stands for:', opts:['Service Selection Board','Services Standards Bureau','State Security Board','Special Services Branch'], a:0, exp:'SSB = Services Selection Board, which conducts the interview process.'},
+  ],
+  'teaching-academia': [
+    {q:'CTET is conducted by:', opts:['State Governments','CBSE','UGC','NCERT'], a:1, exp:'CTET is conducted by CBSE on behalf of the central government.'},
+    {q:'Piaget\'s theory relates to:', opts:['Cognitive development','Motor skills only','Nutrition','Physical fitness'], a:0, exp:'Jean Piaget\'s theory describes stages of cognitive development in children.'},
+    {q:'UGC NET Paper I tests:', opts:['Subject expertise only','Teaching & research aptitude','Physical fitness','Language fluency only'], a:1, exp:'Paper I assesses general teaching and research aptitude, common to all candidates.'},
+  ],
+};
+
+// Must-do skills per field, with keyword overrides for specific courses a student names
+// in "what are you currently doing" — e.g. typing "BCA" gets BCA-specific suggestions
+// instead of the generic engineering-tech list.
+const SKILL_RECS = {
+  'engineering-tech': {
+    why: 'These come up in almost every interview and internship screen in tech, regardless of branch.',
+    default: [
+      {s:'Data Structures & Algorithms', w:'The single most common filter in tech interviews and coding tests.'},
+      {s:'Git & GitHub', w:'Every team, everywhere, expects comfort with version control.'},
+      {s:'SQL basics', w:'Almost every real product touches a database — this is non-negotiable.'},
+      {s:'One backend language (Python or Java)', w:'Pick one and go deep rather than sampling five languages shallowly.'},
+    ],
+    keywords: {
+      'bca': [
+        {s:'Python or Java fundamentals', w:'BCA gives theory — pairing it with hands-on coding is what makes it hireable.'},
+        {s:'DBMS & SQL', w:'A core BCA subject that also happens to be a top interview topic.'},
+        {s:'Web development (HTML, CSS, JavaScript)', w:'Lets you build and show real projects, which BCA alone doesn\'t always produce.'},
+        {s:'Data Structures & Algorithms', w:'Strengthens the theory BCA teaches and prepares you for technical interviews.'},
+      ],
+      'b.tech': [
+        {s:'DSA in your strongest language', w:'The baseline expectation for placements regardless of branch.'},
+        {s:'One real project end-to-end', w:'A finished project beats ten half-done course certificates on a resume.'},
+        {s:'Version control (Git) + basic Linux', w:'Small skills that signal you\'re ready for real engineering teams.'},
+      ],
+      'btech': [
+        {s:'DSA in your strongest language', w:'The baseline expectation for placements regardless of branch.'},
+        {s:'One real project end-to-end', w:'A finished project beats ten half-done course certificates on a resume.'},
+        {s:'Version control (Git) + basic Linux', w:'Small skills that signal you\'re ready for real engineering teams.'},
+      ],
+      'mca': [
+        {s:'Advanced DSA & system design basics', w:'MCA candidates are often expected to be a step ahead of BCA grads here.'},
+        {s:'One full-stack project', w:'Shows you can build a complete product, not just answer theory questions.'},
+        {s:'SQL & one NoSQL database', w:'Covers both common categories of database used in industry.'},
+      ],
+    },
+  },
+  'medicine-healthcare': {
+    why: 'Clinical exposure and communication skills matter as much as textbook knowledge for how far you go.',
+    default: [
+      {s:'Basic clinical skills via hospital shadowing', w:'Textbook knowledge only becomes useful once you\'ve seen it applied.'},
+      {s:'Medical terminology fluency', w:'Speeds up every stage from ward rounds to writing case notes.'},
+      {s:'First-aid & BLS certification', w:'A widely respected, practical credential even before you specialise.'},
+      {s:'Scientific reading & case-study analysis', w:'Builds the habit PG entrance exams and real practice both reward.'},
+    ],
+  },
+  'govt-civil-services': {
+    why: 'These build the base that almost every exam in this family draws on.',
+    default: [
+      {s:'Daily newspaper reading + note-making', w:'Feeds Prelims, Mains, and interview answers alike.'},
+      {s:'Answer-writing practice', w:'The skill that most separates good Mains scores from average ones.'},
+      {s:'Static GK via NCERT (Class 6-12)', w:'A stable base that rarely changes and is tested every year.'},
+      {s:'Basic data interpretation for CSAT', w:'Often neglected, but easy marks once practiced.'},
+    ],
+  },
+  'banking-finance': {
+    why: 'Banking exams reward speed and awareness more than pure depth.',
+    default: [
+      {s:'Mental maths & speed calculation', w:'Directly improves your score on time-pressured quant sections.'},
+      {s:'Reasoning puzzles practice', w:'A skill that improves quickly with focused, regular practice.'},
+      {s:'Banking & economy current affairs', w:'High-yield, low-effort if reviewed weekly rather than crammed.'},
+      {s:'Basic Excel', w:'Useful both for exam-adjacent data handling and for the job itself.'},
+    ],
+  },
+  'design-creative': {
+    why: 'A strong portfolio built on real skills gets you hired faster than certificates alone.',
+    default: [
+      {s:'One design tool, deeply (Figma or Adobe XD)', w:'Depth in one tool beats shallow familiarity with five.'},
+      {s:'Typography & layout fundamentals', w:'The base skill under every good design, regardless of specialisation.'},
+      {s:'Sketching / visual note-taking', w:'Sharpens the observation skills entrance exams and real briefs both test.'},
+      {s:'Basic user research methods', w:'Separates decorative design from design that actually solves a problem.'},
+    ],
+  },
+  'business-management': {
+    why: 'These transfer across entrepreneurship, corporate roles, and MBA applications alike.',
+    default: [
+      {s:'Excel & basic data analysis', w:'The single most-used tool across every business function.'},
+      {s:'Structured business writing', w:'Emails, memos, and case write-ups are judged on clarity constantly.'},
+      {s:'Case-study practice', w:'Builds the structured thinking MBA interviews and real strategy roles reward.'},
+      {s:'Basic finance & accounting literacy', w:'Useful even outside finance roles — budgets touch every function.'},
+    ],
+  },
+  'defence-police': {
+    why: 'Physical readiness and general awareness are tested as rigorously as the written exam.',
+    default: [
+      {s:'Structured physical fitness routine', w:'Physical standards eliminate strong written candidates every year.'},
+      {s:'Current affairs & static GK', w:'Heavily weighted across almost every exam in this track.'},
+      {s:'Basic map reading & spatial reasoning', w:'Comes up in both written tests and SSB-style tasks.'},
+      {s:'Public speaking / group discussion practice', w:'Directly useful for SSB-style interviews and group tasks.'},
+    ],
+  },
+  'teaching-academia': {
+    why: 'Subject depth alone isn\'t enough — pedagogy and classroom experience are tested and expected.',
+    default: [
+      {s:'Child development & pedagogy basics', w:'Tested directly in CTET/TET and useful in real classrooms.'},
+      {s:'Subject-matter depth in your chosen area', w:'The other half of every teaching eligibility exam.'},
+      {s:'Basic classroom / tutoring experience', w:'Even informal tutoring builds real, demonstrable teaching skill.'},
+      {s:'Comfort with one digital teaching tool', w:'Increasingly expected as schools blend offline and online teaching.'},
+    ],
+  },
+};
+
+function getSkillRecs(){
+  const field = SKILL_RECS[activeTrack];
+  if(!field) return {why:'', list:[]};
+  const currentText = (profile.current || '').toLowerCase();
+  if(field.keywords){
+    for(const key in field.keywords){
+      if(currentText.includes(key)) return {why: field.why, list: field.keywords[key]};
+    }
+  }
+  return {why: field.why, list: field.default};
+}
+
+/* ============================================================
+   STATE + PERSISTENCE
+   ============================================================ */
+let profile = null;
+let focusedExam = null;
+let streakData = { count: 0, lastCheckIn: null, days: [] };
+let onboardStep = 0;
+const TOTAL_STEPS = 4;
+
+async function loadState(){
+  try{
+    const p = await window.storage.get('disha_profile');
+    if(p && p.value) profile = JSON.parse(p.value);
+  }catch(e){ profile = null; }
+  try{
+    const s = await window.storage.get('disha_streak');
+    if(s && s.value) streakData = JSON.parse(s.value);
+  }catch(e){ /* no streak yet */ }
+
+  if(profile){
+    document.getElementById('onboarding').style.display = 'none';
+    document.getElementById('app').classList.add('active');
+    initApp();
+  }
+}
+
+async function saveProfile(){
+  try{ await window.storage.set('disha_profile', JSON.stringify(profile)); }catch(e){ console.error('save failed', e); }
+}
+async function saveStreak(){
+  try{ await window.storage.set('disha_streak', JSON.stringify(streakData)); }catch(e){ console.error('save failed', e); }
+}
+
+/* ============================================================
+   ONBOARDING LOGIC
+   ============================================================ */
+function renderChoiceGrid(container, items, selectedId, onPick){
+  container.innerHTML = '';
+  items.forEach(item=>{
+    const el = document.createElement('div');
+    el.className = 'choice' + (item.id===selectedId ? ' selected' : '');
+    el.innerHTML = item.label + '<span class="tick">✓</span>';
+    el.onclick = ()=>onPick(item.id);
+    container.appendChild(el);
+  });
+}
+
+let picked = { status:null, goal:null };
+
+function renderProgress(){
+  const track = document.getElementById('progressTrack');
+  track.innerHTML='';
+  for(let i=0;i<=TOTAL_STEPS;i++){
+    const seg = document.createElement('div'); seg.className='progress-seg';
+    const fill = document.createElement('i'); fill.style.width = i<=onboardStep ? '100%':'0%';
+    seg.appendChild(fill); track.appendChild(seg);
+  }
+}
+
+function showStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.querySelector('.step[data-step="'+n+'"]').classList.add('active');
+  document.getElementById('backBtn').style.visibility = n===0 ? 'hidden':'visible';
+  document.getElementById('nextBtn').textContent = n===TOTAL_STEPS ? 'Enter Disha →' : 'Continue';
+  renderProgress();
+}
+
+function bindStatusGrid(){
+  renderChoiceGrid(document.getElementById('statusGrid'), STATUS, picked.status, (id)=>{ picked.status=id; bindStatusGrid(); });
+}
+function bindGoalGrid(){
+  renderChoiceGrid(document.getElementById('goalGrid'), FIELDS, picked.goal, (id)=>{ picked.goal=id; bindGoalGrid(); });
+}
+bindStatusGrid();
+bindGoalGrid();
+
+document.getElementById('nextBtn').onclick = async ()=>{
+  if(onboardStep===0){
+    const name = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    if(!name || !email){ alert('Please fill in your name and email.'); return; }
+  }
+  if(onboardStep===1 && !picked.status){ alert('Please select where you currently are.'); return; }
+  if(onboardStep===2 && !picked.goal){ alert('Please pick a field.'); return; }
+
+  if(onboardStep < TOTAL_STEPS){
+    onboardStep++;
+    showStep(onboardStep);
+  } else {
+    profile = {
+      name: document.getElementById('f-name').value.trim(),
+      email: document.getElementById('f-email').value.trim(),
+      status: picked.status,
+      current: document.getElementById('f-current').value.trim(),
+      goal: picked.goal,
+      attract: document.getElementById('f-attract').value.trim(),
+      industry: document.getElementById('f-industry').value.trim(),
+      future: document.getElementById('f-future').value.trim(),
+    };
+    await saveProfile();
+    document.getElementById('onboarding').style.display = 'none';
+    document.getElementById('app').classList.add('active');
+    initApp();
+  }
+};
+document.getElementById('backBtn').onclick = ()=>{
+  if(onboardStep>0){ onboardStep--; showStep(onboardStep); }
+};
+
+/* ============================================================
+   APP INIT
+   ============================================================ */
+function initApp(){
+  document.getElementById('avatarInitial').textContent = profile.name.charAt(0).toUpperCase();
+  document.getElementById('sidebarName').textContent = profile.name.split(' ')[0];
+  document.getElementById('sidebarGoal').textContent = FIELDS.find(f=>f.id===profile.goal)?.label || '';
+
+  renderRoadmap();
+  renderOpportunities();
+  renderExams();
+  renderSkills();
+  renderStreak();
+  initChat();
+
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    item.onclick = ()=>{
+      document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('panel-'+item.dataset.panel).classList.add('active');
+    };
+  });
+}
+
+function renderRoadmap(){
+  const list = document.getElementById('roadmapList');
+  const clearBtn = document.getElementById('clearFocusBtn');
+  const title = document.getElementById('roadmapTitle');
+
+  let steps;
+  if(focusedExam && ROADMAP_BY_EXAM[focusedExam]){
+    steps = ROADMAP_BY_EXAM[focusedExam];
+    title.textContent = `Roadmap for ${focusedExam}`;
+    document.getElementById('roadmapIntro').textContent =
+      `A focused prep path for ${focusedExam}, built for someone starting from "${profile.current || 'where you are now'}".`;
+    clearBtn.style.display = 'inline-block';
+  } else {
+    steps = ROADMAPS[profile.goal] || [];
+    title.textContent = 'Your roadmap';
+    document.getElementById('roadmapIntro').textContent =
+      `Starting from "${profile.current || 'where you are now'}" toward ${FIELDS.find(f=>f.id===profile.goal).label.toLowerCase()}. Pick a specific exam from the Exams tab any time for a more focused path.`;
+    clearBtn.style.display = 'none';
+  }
+
+  list.innerHTML = steps.map(s=>`
+    <div class="rm-item">
+      <span class="duration">${s.d}</span>
+      <h3>${s.t}</h3>
+      <p>${s.p}</p>
+    </div>`).join('');
+}
+document.getElementById('clearFocusBtn').onclick = ()=>{ focusedExam = null; renderRoadmap(); };
+
+function renderOpportunities(){
+  const grid = document.getElementById('oppGrid');
+  const opps = OPPORTUNITIES[profile.goal] || [];
+  grid.innerHTML = opps.map(o=>`
+    <div class="opp-card">
+      <span class="tag">${FIELDS.find(f=>f.id===profile.goal).label}</span>
+      <h3 style="margin-top:10px;">${o.t}</h3>
+      <p>${o.d}</p>
+    </div>`).join('');
+}
+
+let examFilter = 'mine';
+function renderExamFilters(){
+  const filters = document.getElementById('examFilters');
+  const chips = [
+    {id:'mine', label:'For your field'},
+    {id:'all', label:'All exams'},
+    {id:'gov', label:'Government only'},
+    {id:'priv', label:'Private only'},
+  ];
+  filters.innerHTML = chips.map(c=>`<div class="filter-chip ${examFilter===c.id?'active':''}" data-f="${c.id}">${c.label}</div>`).join('');
+  filters.querySelectorAll('.filter-chip').forEach(chip=>{
+    chip.onclick = ()=>{ examFilter = chip.dataset.f; renderExams(); };
+  });
+}
+
+function renderExams(){
+  renderExamFilters();
+  const list = document.getElementById('examList');
+  let items = EXAMS;
+  if(examFilter==='mine') items = EXAMS.filter(e=>e.cat===profile.goal);
+  else if(examFilter==='gov') items = EXAMS.filter(e=>e.type==='gov');
+  else if(examFilter==='priv') items = EXAMS.filter(e=>e.type==='priv');
+
+  if(items.length===0){
+    list.innerHTML = `<div class="card"><p style="color:var(--text-dim);">No exams tagged for this field yet — try "All exams" to browse everything.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = items.map((e,i)=>`
+    <div class="exam-card">
+      <div class="exam-head">
+        <div class="exam-head-left">
+          <h3>${e.name}</h3>
+          <div class="meta">${e.dateNote}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="exam-type ${e.type}">${e.type==='gov'?'Government':'Private'}</span>
+          <button class="exam-toggle-btn" data-idx="${i}">Details</button>
+        </div>
+      </div>
+      <div class="exam-body" id="exam-body-${i}">
+        <div class="exam-grid">
+          <div><div class="exam-field-label">Eligibility</div><div class="exam-field-val">${e.eligibility}</div></div>
+          <div><div class="exam-field-label">Form fee</div><div class="exam-field-val">${e.fee}</div></div>
+        </div>
+        <div style="margin-bottom:16px;"><div class="exam-field-label">Syllabus</div><div class="syllabus-tags">${e.syllabus.map(s=>`<span>${s}</span>`).join('')}</div></div>
+        <div style="margin-bottom:18px;">
+          <div class="exam-field-label">Resources to start with</div>
+          <div class="resource-list">${e.resources.map(r=> r.url
+            ? `<a href="${r.url}" target="_blank" rel="noopener">↗ ${r.label}</a>`
+            : `<span style="display:block;color:var(--text-dim);font-size:13.5px;margin-bottom:6px;">• ${r.label}</span>`
+          ).join('')}</div>
+        </div>
+        ${ROADMAP_BY_EXAM[e.name] ? `<button class="btn teal" data-focus="${e.name}">Build my roadmap for this exam →</button>` : ''}
+      </div>
+    </div>`).join('');
+
+  list.querySelectorAll('.exam-toggle-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const body = document.getElementById('exam-body-'+btn.dataset.idx);
+      body.classList.toggle('open');
+      btn.textContent = body.classList.contains('open') ? 'Hide' : 'Details';
+    };
+  });
+  list.querySelectorAll('[data-focus]').forEach(btn=>{
+    btn.onclick = ()=>{
+      focusedExam = btn.dataset.focus;
+      renderRoadmap();
+      document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      document.querySelector('.nav-item[data-panel="roadmap"]').classList.add('active');
+      document.getElementById('panel-roadmap').classList.add('active');
+    };
+  });
+}
+
+let activeTrack = null;
+function renderSkills(){
+  activeTrack = profile.goal;
+  const sel = document.getElementById('trackSelect');
+  sel.innerHTML = FIELDS.map(f=>`<div class="filter-chip ${f.id===activeTrack?'active':''}" data-t="${f.id}">${f.label}</div>`).join('');
+  sel.querySelectorAll('.filter-chip').forEach(c=>{
+    c.onclick = ()=>{ activeTrack = c.dataset.t; renderSkills(); };
+  });
+  renderSkillRecs();
+  renderDailyQuestion();
+  renderQuiz();
+}
+
+async function renderSkillRecs(){
+  const card = document.getElementById('skillRecsCard');
+  const { why, list } = getSkillRecs();
+  if(!list || list.length===0){
+    card.innerHTML = `<p style="color:var(--text-dim);font-size:13.5px;">No recommendations for this track yet.</p>`;
+    return;
+  }
+  let done = {};
+  try{
+    const stored = await window.storage.get('disha_skillprogress_'+activeTrack);
+    if(stored && stored.value) done = JSON.parse(stored.value);
+  }catch(e){}
+
+  card.innerHTML = `
+    <p class="skill-why">${why}</p>
+    ${list.map((item,i)=>`
+      <label class="skill-rec ${done[item.s] ? 'done':''}" data-i="${i}">
+        <input type="checkbox" ${done[item.s]?'checked':''}>
+        <div>
+          <div class="skill-name">${item.s}</div>
+          <div class="skill-why-line">${item.w}</div>
+        </div>
+      </label>`).join('')}`;
+
+  card.querySelectorAll('.skill-rec').forEach((row,i)=>{
+    const checkbox = row.querySelector('input');
+    checkbox.onchange = async ()=>{
+      const item = list[i];
+      done[item.s] = checkbox.checked;
+      row.classList.toggle('done', checkbox.checked);
+      try{ await window.storage.set('disha_skillprogress_'+activeTrack, JSON.stringify(done)); }catch(e){}
+    };
+  });
+}
+
+async function renderDailyQuestion(){
+  const today = new Date().toISOString().slice(0,10);
+  let daily = null;
+  try{
+    const stored = await window.storage.get('disha_daily_'+activeTrack);
+    if(stored && stored.value){
+      const parsed = JSON.parse(stored.value);
+      if(parsed.date === today) daily = parsed;
+    }
+  }catch(e){}
+  if(!daily){
+    const bank = QUIZ_BANK[activeTrack] || [];
+    const q = bank[Math.floor(Math.random()*bank.length)];
+    daily = { date: today, q };
+    try{ await window.storage.set('disha_daily_'+activeTrack, JSON.stringify(daily)); }catch(e){}
+  }
+  const card = document.getElementById('dailyQCard');
+  const q = daily.q;
+  card.innerHTML = `
+    <div class="qmeta">${FIELDS.find(f=>f.id===activeTrack).label} — refreshes daily</div>
+    <h3>${q.q}</h3>
+    <div class="opt-list">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div>
+    <div class="qfeedback" id="dailyFeedback"></div>`;
+  card.querySelectorAll('.opt').forEach(btn=>{
+    btn.onclick = ()=>{
+      const i = parseInt(btn.dataset.i);
+      card.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+      if(i===q.a){ btn.classList.add('correct'); }
+      else{ btn.classList.add('wrong'); card.querySelectorAll('.opt')[q.a].classList.add('correct'); }
+      document.getElementById('dailyFeedback').textContent = q.exp;
+    };
+  });
+}
+
+function renderQuiz(){
+  const card = document.getElementById('quizCard');
+  const bank = QUIZ_BANK[activeTrack] || [];
+  let qi = 0, score = 0;
+  function showQ(){
+    if(qi >= bank.length){
+      card.innerHTML = `<h3>Quiz complete</h3><p style="color:var(--text-dim);margin-bottom:16px;">You scored ${score} / ${bank.length}.</p><button class="btn" id="retryQuiz">Try again</button>`;
+      document.getElementById('retryQuiz').onclick = ()=>{ qi=0; score=0; showQ(); };
+      return;
+    }
+    const q = bank[qi];
+    card.innerHTML = `
+      <div class="qmeta">Question ${qi+1} of ${bank.length}</div>
+      <h3>${q.q}</h3>
+      <div class="opt-list">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div>
+      <div class="qfeedback" id="quizFeedback"></div>
+      <button class="btn ghost" id="nextQ" style="display:none;padding:10px 0;">Next question →</button>`;
+    card.querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick = ()=>{
+        const i = parseInt(btn.dataset.i);
+        card.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+        if(i===q.a){ btn.classList.add('correct'); score++; }
+        else{ btn.classList.add('wrong'); card.querySelectorAll('.opt')[q.a].classList.add('correct'); }
+        document.getElementById('quizFeedback').textContent = q.exp;
+        document.getElementById('nextQ').style.display = 'inline-block';
+      };
+    });
+    document.getElementById('nextQ').onclick = ()=>{ qi++; showQ(); };
+  }
+  showQ();
+}
+
+/* ============================================================
+   STREAK
+   ============================================================ */
+function renderStreak(){
+  document.getElementById('streakNum').innerHTML = streakData.count + '<span>day streak</span>';
+  const week = document.getElementById('streakWeek');
+  const labels = ['M','T','W','T','F','S','S'];
+  const todayIdx = (new Date().getDay()+6)%7; // Monday=0
+  week.innerHTML = labels.map((l,i)=>{
+    const done = streakData.days.includes(dateForIndexThisWeek(i));
+    return `<div class="streak-day ${done?'done':''}">${l}</div>`;
+  }).join('');
+
+  const today = new Date().toISOString().slice(0,10);
+  const checkedToday = streakData.lastCheckIn === today;
+  const btn = document.getElementById('checkInBtn');
+  btn.textContent = checkedToday ? 'Checked in ✓' : 'Check in today';
+  btn.disabled = checkedToday;
+
+  const milestones = [7, 30, 100];
+  const row = document.getElementById('milestoneRow');
+  row.innerHTML = milestones.map(m=>`
+    <div class="milestone ${streakData.count>=m?'earned':''}">
+      <div class="m-num">${m}</div>
+      <div class="m-label">${streakData.count>=m ? 'Certificate earned' : 'days to unlock'}</div>
+    </div>`).join('');
+
+  const certSlot = document.getElementById('certSlot');
+  const earnedMilestone = [...milestones].reverse().find(m=>streakData.count>=m);
+  if(earnedMilestone){
+    certSlot.innerHTML = `
+      <div class="certificate">
+        <div class="cert-eyebrow">CERTIFICATE OF CONSISTENCY</div>
+        <h2>Disha</h2>
+        <p>This certifies that</p>
+        <div class="cert-name">${profile.name}</div>
+        <p>has maintained a ${earnedMilestone}-day learning streak, showing the kind of consistency that compounds into real results.</p>
+        <div class="cert-date">Issued ${new Date().toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'})}</div>
+      </div>`;
+  } else {
+    certSlot.innerHTML = '';
+  }
+}
+
+function dateForIndexThisWeek(idx){
+  const now = new Date();
+  const currentIdx = (now.getDay()+6)%7;
+  const diff = idx - currentIdx;
+  const d = new Date(now);
+  d.setDate(now.getDate()+diff);
+  return d.toISOString().slice(0,10);
+}
+
+document.getElementById('checkInBtn').onclick = async ()=>{
+  const today = new Date().toISOString().slice(0,10);
+  if(streakData.lastCheckIn === today) return;
+
+  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(streakData.lastCheckIn === yesterday){ streakData.count++; }
+  else if(!streakData.lastCheckIn){ streakData.count = 1; }
+  else { streakData.count = 1; } // streak broken, restart
+
+  streakData.lastCheckIn = today;
+  if(!streakData.days.includes(today)) streakData.days.push(today);
+  await saveStreak();
+  renderStreak();
+};
+
+/* ============================================================
+   CHATBOT (rule-based demo — swap in a real API call for production)
+   ============================================================ */
+function initChat(){
+  const fab = document.getElementById('chat-fab');
+  const panel = document.getElementById('chat-panel');
+  fab.onclick = ()=>{ panel.classList.toggle('open'); if(panel.classList.contains('open') && document.getElementById('chat-body').children.length===0) botSay(`Hi ${profile.name.split(' ')[0]}, I'm the Disha assistant. Ask me about your roadmap, an exam, or what to do next.`); };
+  document.getElementById('chatClose').onclick = ()=>panel.classList.remove('open');
+  document.getElementById('chat-send').onclick = sendChat;
+  document.getElementById('chat-input').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
+
+  const suggestions = ['What should I do next?', 'Suggest an exam for me', 'I feel stuck'];
+  document.getElementById('chatSuggest').innerHTML = suggestions.map(s=>`<button>${s}</button>`).join('');
+  document.getElementById('chatSuggest').querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{ userSay(b.textContent); respondTo(b.textContent); };
+  });
+}
+
+function userSay(text){
+  const body = document.getElementById('chat-body');
+  const m = document.createElement('div'); m.className='msg user'; m.textContent = text;
+  body.appendChild(m); body.scrollTop = body.scrollHeight;
+}
+function botSay(text){
+  const body = document.getElementById('chat-body');
+  const m = document.createElement('div'); m.className='msg bot'; m.textContent = text;
+  body.appendChild(m); body.scrollTop = body.scrollHeight;
+}
+
+function sendChat(){
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text) return;
+  userSay(text); input.value='';
+  respondTo(text);
+}
+
+function respondTo(text){
+  const t = text.toLowerCase();
+  const fieldLabel = FIELDS.find(f=>f.id===profile.goal).label;
+  setTimeout(()=>{
+    if(t.includes('stuck') || t.includes('confused') || t.includes('don\'t know')){
+      botSay(`That's normal — most students feel this at some point. Start with the first item on your roadmap, not the whole path. Want me to open it?`);
+    } else if(t.includes('exam') || t.includes('crack') || t.includes('prepare')){
+      const relevant = EXAMS.filter(e=>e.cat===profile.goal).map(e=>e.name).slice(0,3).join(', ');
+      botSay(`For ${fieldLabel}, the exams worth looking at first are: ${relevant || 'a few options in the Exams tab'}. Open the Exams tab for syllabus and eligibility.`);
+    } else if(t.includes('next') || t.includes('what should i do')){
+      const activeSteps = (focusedExam && ROADMAP_BY_EXAM[focusedExam]) ? ROADMAP_BY_EXAM[focusedExam] : (ROADMAPS[profile.goal]||[]);
+      const first = activeSteps[0];
+      botSay(first ? `Your next roadmap step is: "${first.t}" — ${first.p}` : `Check your Roadmap tab for a personalised next step.`);
+    } else if(t.includes('streak') || t.includes('consistent')){
+      botSay(`You're currently on a ${streakData.count}-day streak. Check in daily from the Streak tab — certificates unlock at 7, 30 and 100 days.`);
+    } else if(t.includes('skill') || t.includes('practice') || t.includes('quiz')){
+      botSay(`Head to the Skill practice tab — there's a fresh daily question and a full quiz for ${fieldLabel}.`);
+    } else if(t.includes('opportunit')){
+      botSay(`The Opportunities tab lists paths in and around ${fieldLabel} — including a few that are easy to overlook.`);
+    } else {
+      botSay(`I'm a simple rule-based demo for now — in production this would call a real language model with your full profile. Try asking about your roadmap, an exam, or your streak.`);
+    }
+  }, 350);
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+loadState();
+</script>
+</body>
+</html>
